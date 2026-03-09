@@ -1,5 +1,6 @@
-import { BulbOutlined, GlobalOutlined } from '@ant-design/icons'
-import { Layout, Select, Space, Switch, Typography } from 'antd'
+import { BulbFilled, BulbOutlined } from '@ant-design/icons'
+import { Button, Layout, Space, Typography } from 'antd'
+import type { CSSProperties } from 'react'
 import { useTranslation } from 'react-i18next'
 import type { AppLanguage } from '../../../shared/config/constants'
 
@@ -19,6 +20,14 @@ export function AppHeader({
   onThemeChange,
 }: AppHeaderProps) {
   const { t } = useTranslation()
+  const nextLanguage: AppLanguage = language === 'ru' ? 'en' : 'ru'
+  const controlButtonStyle: CSSProperties = {
+    minWidth: 92,
+    fontWeight: 600,
+    color: '#ffffff',
+    borderColor: 'rgba(255, 255, 255, 0.5)',
+    backgroundColor: 'rgba(255, 255, 255, 0.08)',
+  }
 
   return (
     <Header
@@ -33,27 +42,23 @@ export function AppHeader({
         {t('appTitle')}
       </Typography.Title>
       <Space size="large" align="center">
-        <Space size="small" align="center">
-          <GlobalOutlined style={{ color: '#fff' }} />
-          <Select<AppLanguage>
-            value={language}
-            style={{ width: 110 }}
-            onChange={onLanguageChange}
-            options={[
-              { value: 'ru', label: 'Русский' },
-              { value: 'en', label: 'English' },
-            ]}
-          />
-        </Space>
-        <Space size="small" align="center">
-          <BulbOutlined style={{ color: '#fff' }} />
-          <Switch
-            checked={isDarkTheme}
-            onChange={onThemeChange}
-            checkedChildren={t('darkMode')}
-            unCheckedChildren={t('theme')}
-          />
-        </Space>
+        <Button
+          aria-label={t('language')}
+          title={t('language')}
+          onClick={() => onLanguageChange(nextLanguage)}
+          style={controlButtonStyle}
+        >
+          {language.toUpperCase()}
+        </Button>
+        <Button
+          aria-label={t('theme')}
+          title={t('theme')}
+          onClick={() => onThemeChange(!isDarkTheme)}
+          icon={isDarkTheme ? <BulbFilled /> : <BulbOutlined />}
+          style={controlButtonStyle}
+        >
+          {t('theme')}
+        </Button>
       </Space>
     </Header>
   )
