@@ -7,8 +7,10 @@ import type { AppLanguage } from '../../../shared/config/constants'
 type AppHeaderProps = {
   language: AppLanguage
   isDarkTheme: boolean
+  isAuthorized: boolean
   onLanguageChange: (value: AppLanguage) => void
   onThemeChange: (value: boolean) => void
+  onAuthClick: () => void
 }
 
 const { Header } = Layout
@@ -16,8 +18,10 @@ const { Header } = Layout
 export function AppHeader({
   language,
   isDarkTheme,
+  isAuthorized,
   onLanguageChange,
   onThemeChange,
+  onAuthClick,
 }: AppHeaderProps) {
   const { t } = useTranslation()
   const nextLanguage: AppLanguage = language === 'ru' ? 'en' : 'ru'
@@ -41,23 +45,34 @@ export function AppHeader({
       <Typography.Title level={4} style={{ margin: 0, color: '#fff' }}>
         {t('appTitle')}
       </Typography.Title>
-      <Space size="large" align="center">
+      <Space size="middle" align="center">
+        <Space size="small" align="center">
+          <Button
+            aria-label={t('language')}
+            title={t('language')}
+            onClick={() => onLanguageChange(nextLanguage)}
+            style={controlButtonStyle}
+          >
+            {language.toUpperCase()}
+          </Button>
+          <Button
+            aria-label={t('theme')}
+            title={t('theme')}
+            onClick={() => onThemeChange(!isDarkTheme)}
+            icon={isDarkTheme ? <BulbFilled /> : <BulbOutlined />}
+            style={controlButtonStyle}
+          >
+            {t('theme')}
+          </Button>
+        </Space>
         <Button
-          aria-label={t('language')}
-          title={t('language')}
-          onClick={() => onLanguageChange(nextLanguage)}
-          style={controlButtonStyle}
+          type="primary"
+          aria-label={isAuthorized ? t('profile') : t('signIn')}
+          title={isAuthorized ? t('profile') : t('signIn')}
+          onClick={onAuthClick}
+          style={{ minWidth: 92, fontWeight: 600 }}
         >
-          {language.toUpperCase()}
-        </Button>
-        <Button
-          aria-label={t('theme')}
-          title={t('theme')}
-          onClick={() => onThemeChange(!isDarkTheme)}
-          icon={isDarkTheme ? <BulbFilled /> : <BulbOutlined />}
-          style={controlButtonStyle}
-        >
-          {t('theme')}
+          {isAuthorized ? t('profile') : t('signIn')}
         </Button>
       </Space>
     </Header>
