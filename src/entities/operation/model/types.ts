@@ -4,5 +4,25 @@ export type OperationRow = {
   category: string
   amount: number
   date: string
-  source: string
+  description: string
+}
+
+export type OperationType = 'Cost' | 'Profit'
+
+export type OperationDto = {
+  id: string
+  name: string
+  desc?: string
+  amount: number
+  date: string
+  type: OperationType
+  category?: {
+    name?: string
+  }
+}
+
+export type OperationsPagination = {
+  pageSize: number
+  pageNumber: number
+  total: number
 }

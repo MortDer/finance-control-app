@@ -17,6 +17,7 @@ const resources = {
       amount: 'Сумма',
       date: 'Дата',
       source: 'Источник',
+      description: 'Описание',
       signIn: 'Войти',
       signUp: 'Регистрация',
       profile: 'Профиль',
@@ -34,6 +35,8 @@ const resources = {
       commandId: 'Команда',
       signUpDate: 'Дата регистрации',
       emptyProfile: 'Профиль не найден',
+      retry: 'Повторить',
+      operationsLoadError: 'Не удалось загрузить операции',
     },
   },
   en: {
@@ -51,6 +54,7 @@ const resources = {
       amount: 'Amount',
       date: 'Date',
       source: 'Source',
+      description: 'Description',
       signIn: 'Sign in',
       signUp: 'Sign up',
       profile: 'Profile',
@@ -68,6 +72,8 @@ const resources = {
       commandId: 'Command',
       signUpDate: 'Sign up date',
       emptyProfile: 'Profile not found',
+      retry: 'Retry',
+      operationsLoadError: 'Failed to load operations',
     },
   },
 }

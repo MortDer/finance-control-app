@@ -31,7 +31,9 @@ export default function App() {
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false)
 
   useEffect(() => {
-    void i18n.changeLanguage(language)
+    if (i18n.language !== language) {
+      void i18n.changeLanguage(language)
+    }
     localStorage.setItem(LANGUAGE_STORAGE_KEY, language)
   }, [i18n, language])
 
@@ -76,7 +78,7 @@ export default function App() {
           onAuthClick={handleHeaderAuthClick}
         />
         <Content style={{ padding: 24 }}>
-          <OperationsTabs />
+          <OperationsTabs authToken={authToken} />
         </Content>
         <AuthModal
           open={isAuthModalOpen}
