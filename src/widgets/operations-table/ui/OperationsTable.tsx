@@ -4,6 +4,7 @@ import type { TableProps } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getOperations } from '../../../entities/operation/api/operationsApi'
+import { CreateOperationModal } from '../../../features/operation-create/ui/CreateOperationModal'
 import type {
   OperationDto,
   OperationRow,
@@ -34,6 +35,7 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
   const [isLoading, setIsLoading] = useState(false)
   const [errorText, setErrorText] = useState('')
   const [reloadTick, setReloadTick] = useState(0)
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [scrollY, setScrollY] = useState(260)
   const [pagination, setPagination] = useState<OperationsPagination>({
     pageNumber: 1,
@@ -126,7 +128,16 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
           loading={isLoading}
           scroll={{ y: scrollY }}
           sticky
-          title={() => t(titleKey)}
+          title={() => (
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <span>{t(titleKey)}</span>
+              {authToken ? (
+                <Button type="primary" onClick={() => setIsCreateModalOpen(true)}>
+                  {t('addOperation')}
+                </Button>
+              ) : null}
+            </div>
+          )}
           pagination={{
             current: pagination.pageNumber,
             pageSize: pagination.pageSize,
@@ -136,6 +147,12 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
           }}
         />
       </div>
+      <CreateOperationModal
+        open={isCreateModalOpen}
+        operationType={operationType}
+        onClose={() => setIsCreateModalOpen(false)}
+        onSuccess={() => setReloadTick((prev) => prev + 1)}
+      />
     </div>
   )
 }

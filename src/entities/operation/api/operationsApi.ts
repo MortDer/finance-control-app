@@ -18,6 +18,15 @@ type GetOperationsResult = {
   pagination: OperationsPagination
 }
 
+type CreateOperationParams = {
+  name: string
+  desc?: string
+  amount: number
+  date: string
+  type: OperationType
+  categoryId: string
+}
+
 export async function getOperations(params: GetOperationsParams): Promise<GetOperationsResult> {
   const query = new URLSearchParams({
     type: JSON.stringify(params.type),
@@ -38,4 +47,9 @@ export async function getOperations(params: GetOperationsParams): Promise<GetOpe
       total: 0,
     },
   }
+}
+
+export async function createOperation(params: CreateOperationParams): Promise<OperationDto> {
+  const response = await http.post<OperationDto>('/operations', params)
+  return response.data
 }
