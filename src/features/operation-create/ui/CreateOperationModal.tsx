@@ -1,16 +1,22 @@
 import { Alert, Button, DatePicker, Form, Input, InputNumber, Modal, Select, Space } from 'antd'
 import type { Dayjs } from 'dayjs'
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { createCategory, getCategories } from '../../../entities/category/api/categoriesApi'
 import type { Category } from '../../../entities/category/model/types'
 import { createOperation } from '../../../entities/operation/api/operationsApi'
 import type { OperationType } from '../../../entities/operation/model/types'
+import { ManageCategoriesModal } from '../../category-manage/ui/ManageCategoriesModal'
 import { getApiErrorMessage } from '../../../shared/lib/getApiErrorMessage'
 
 type CreateOperationModalProps = {
   open: boolean
   operationType: OperationType
+  categories: Category[]
+  isLoadingCategories: boolean
+  isCategoryActionLoading: boolean
+  onCreateCategory: (name: string) => Promise<Category>
+  onUpdateCategory: (id: string, name: string) => Promise<Category>
+  onDeleteCategory: (id: string) => Promise<void>
   onClose: () => void
   onSuccess: () => void
 }
@@ -23,36 +29,24 @@ type OperationFormValues = {
   categoryId: string
 }
 
-export function CreateOperationModal({ open, operationType, onClose, onSuccess }: CreateOperationModalProps) {
+export function CreateOperationModal({
+  open,
+  operationType,
+  categories,
+  isLoadingCategories,
+  isCategoryActionLoading,
+  onCreateCategory,
+  onUpdateCategory,
+  onDeleteCategory,
+  onClose,
+  onSuccess,
+}: CreateOperationModalProps) {
   const { t } = useTranslation()
   const [form] = Form.useForm<OperationFormValues>()
-  const [categoryForm] = Form.useForm<{ name: string }>()
-  const [categories, setCategories] = useState<Category[]>([])
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isCategoryModalOpen, setIsCategoryModalOpen] = useState(false)
   const [isCategorySubmitting, setIsCategorySubmitting] = useState(false)
   const [errorText, setErrorText] = useState('')
-
-  useEffect(() => {
-    if (!open) {
-      return
-    }
-
-    const loadCategories = async () => {
-      try {
-        setIsLoadingCategories(true)
-        const result = await getCategories()
-        setCategories(result)
-      } catch (error) {
-        setErrorText(getApiErrorMessage(error, t('categoriesLoadError')))
-      } finally {
-        setIsLoadingCategories(false)
-      }
-    }
-
-    void loadCategories()
-  }, [open, t])
 
   const handleCreateOperation = async (values: OperationFormValues) => {
     try {
@@ -81,13 +75,13 @@ export function CreateOperationModal({ open, operationType, onClose, onSuccess }
     try {
       setIsCategorySubmitting(true)
       setErrorText('')
-      const category = await createCategory(values.name)
-      setCategories((prev) => [category, ...prev])
+      const category = await onCreateCategory(values.name)
       form.setFieldValue('categoryId', category.id)
-      categoryForm.resetFields()
       setIsCategoryModalOpen(false)
+      return category
     } catch (error) {
       setErrorText(getApiErrorMessage(error, t('categoryCreateError')))
+      throw error
     } finally {
       setIsCategorySubmitting(false)
     }
@@ -152,29 +146,37 @@ export function CreateOperationModal({ open, operationType, onClose, onSuccess }
         </Form>
       </Modal>
 
-      <Modal
+      <ManageCategoriesModal
         open={isCategoryModalOpen}
-        onCancel={() => setIsCategoryModalOpen(false)}
-        destroyOnHidden
-        footer={null}
-        title={t('addCategory')}
-      >
-        <Form form={categoryForm} layout="vertical" onFinish={handleCreateCategory}>
-          <Form.Item
-            name="name"
-            label={t('name')}
-            rules={[{ required: true, message: t('requiredField') }]}
-          >
-            <Input />
-          </Form.Item>
-          <Space style={{ width: '100%', justifyContent: 'flex-end' }}>
-            <Button onClick={() => setIsCategoryModalOpen(false)}>{t('close')}</Button>
-            <Button type="primary" htmlType="submit" loading={isCategorySubmitting}>
-              {t('save')}
-            </Button>
-          </Space>
-        </Form>
-      </Modal>
+        categories={categories}
+        isSubmitting={isCategorySubmitting}
+        isActionLoading={isCategoryActionLoading}
+        onCreate={async (name) => {
+          await handleCreateCategory({ name })
+        }}
+        onUpdate={async (id, name) => {
+          try {
+            setErrorText('')
+            await onUpdateCategory(id, name)
+          } catch (error) {
+            setErrorText(getApiErrorMessage(error, t('categoryUpdateError')))
+            throw error
+          }
+        }}
+        onDelete={async (id) => {
+          try {
+            setErrorText('')
+            await onDeleteCategory(id)
+            if (form.getFieldValue('categoryId') === id) {
+              form.setFieldValue('categoryId', undefined)
+            }
+          } catch (error) {
+            setErrorText(getApiErrorMessage(error, t('categoryDeleteError')))
+            throw error
+          }
+        }}
+        onClose={() => setIsCategoryModalOpen(false)}
+      />
     </>
   )
 }

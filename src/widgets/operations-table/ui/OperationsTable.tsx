@@ -1,6 +1,8 @@
 import { Alert, Button, Table } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { useCategories } from '../../../entities/category/model/useCategories'
+import { getApiErrorMessage } from '../../../shared/lib/getApiErrorMessage'
 import { CreateOperationModal } from '../../../features/operation-create/ui/CreateOperationModal'
 import type { OperationType } from '../../../entities/operation/model/types'
 import { getOperationsColumns } from '../lib/getOperationsColumns'
@@ -27,12 +29,29 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
     isCreateModalOpen,
     setIsCreateModalOpen,
     actionLoading,
-    categories,
     refetchOperations,
     saveOperation,
     removeOperationById,
   } = useOperationsTableData({ authToken, operationType, t })
+  const {
+    categories,
+    isLoading: isLoadingCategories,
+    isActionLoading: isCategoryActionLoading,
+    error: categoriesError,
+    clearError: clearCategoriesError,
+    createCategory,
+    updateCategory,
+    deleteCategory,
+  } = useCategories({ enabled: Boolean(authToken) })
   const { editingRowId, editDraft, isEditing, beginEdit, setDraftField, resetEdit } = useOperationRowEdit()
+
+  useEffect(() => {
+    if (!categoriesError) {
+      return
+    }
+    setErrorText(getApiErrorMessage(categoriesError, t('categoriesLoadError')))
+    clearCategoriesError()
+  }, [categoriesError, clearCategoriesError, setErrorText, t])
 
   useEffect(() => {
     const updateScrollY = () => {
@@ -131,6 +150,12 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
       <CreateOperationModal
         open={isCreateModalOpen}
         operationType={operationType}
+        categories={categories}
+        isLoadingCategories={isLoadingCategories}
+        isCategoryActionLoading={isCategoryActionLoading}
+        onCreateCategory={createCategory}
+        onUpdateCategory={updateCategory}
+        onDeleteCategory={deleteCategory}
         onClose={() => setIsCreateModalOpen(false)}
         onSuccess={refetchOperations}
       />

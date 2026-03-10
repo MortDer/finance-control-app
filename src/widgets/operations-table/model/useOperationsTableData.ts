@@ -1,8 +1,6 @@
 import axios from 'axios'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { TFunction } from 'i18next'
-import { getCategories } from '../../../entities/category/api/categoriesApi'
-import type { Category } from '../../../entities/category/model/types'
 import {
   deleteOperation,
   getOperations,
@@ -38,18 +36,22 @@ type Params = {
 }
 
 export function useOperationsTableData({ authToken, operationType, t }: Params) {
+  const tRef = useRef(t)
   const [rows, setRows] = useState<OperationRow[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [errorText, setErrorText] = useState('')
   const [refetchVersion, setRefetchVersion] = useState(0)
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [actionLoading, setActionLoading] = useState(false)
-  const [categories, setCategories] = useState<Category[]>([])
   const [pagination, setPagination] = useState<OperationsPagination>({
     pageNumber: 1,
     pageSize: 10,
     total: 0,
   })
+
+  useEffect(() => {
+    tRef.current = t
+  }, [t])
 
   useEffect(() => {
     const controller = new AbortController()
@@ -72,7 +74,7 @@ export function useOperationsTableData({ authToken, operationType, t }: Params) 
           return
         }
 
-        setErrorText(getApiErrorMessage(error, t('operationsLoadError')))
+        setErrorText(getApiErrorMessage(error, tRef.current('operationsLoadError')))
         setRows([])
       } finally {
         if (!controller.signal.aborted) {
@@ -84,25 +86,7 @@ export function useOperationsTableData({ authToken, operationType, t }: Params) 
     void loadOperations()
 
     return () => controller.abort()
-  }, [authToken, operationType, pagination.pageNumber, pagination.pageSize, refetchVersion, t])
-
-  useEffect(() => {
-    if (!authToken) {
-      setCategories([])
-      return
-    }
-
-    const loadCategories = async () => {
-      try {
-        const result = await getCategories()
-        setCategories(result)
-      } catch (error) {
-        setErrorText(getApiErrorMessage(error, t('categoriesLoadError')))
-      }
-    }
-
-    void loadCategories()
-  }, [authToken, t])
+  }, [authToken, operationType, pagination.pageNumber, pagination.pageSize, refetchVersion])
 
   const refetchOperations = () => setRefetchVersion((prev) => prev + 1)
 
@@ -153,7 +137,6 @@ export function useOperationsTableData({ authToken, operationType, t }: Params) 
     isCreateModalOpen,
     setIsCreateModalOpen,
     actionLoading,
-    categories,
     refetchOperations,
     saveOperation,
     removeOperationById,

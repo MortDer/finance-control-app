@@ -3,9 +3,10 @@ import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthModal } from '../features/auth/ui/AuthModal'
+import { OperationsExpensePage } from '../pages/operations-expense/ui/OperationsExpensePage'
+import { OperationsIncomePage } from '../pages/operations-income/ui/OperationsIncomePage'
 import { ProfileModal } from '../features/profile/ui/ProfileModal'
 import { AppHeader } from '../widgets/app-header/ui/AppHeader'
-import { OperationsTable } from '../widgets/operations-table/ui/OperationsTable'
 import { OperationsTabs } from '../widgets/operations-tabs/ui/OperationsTabs'
 import {
   AUTH_TOKEN_STORAGE_KEY,
@@ -94,23 +95,11 @@ export default function App() {
               <Route path="/" element={<Navigate to="/operations/income" replace />} />
               <Route
                 path="/operations/income"
-                element={
-                  <OperationsTable
-                    authToken={authToken}
-                    operationType="Profit"
-                    titleKey="tableTitleIncomes"
-                  />
-                }
+                element={<OperationsIncomePage authToken={authToken} />}
               />
               <Route
                 path="/operations/expense"
-                element={
-                  <OperationsTable
-                    authToken={authToken}
-                    operationType="Cost"
-                    titleKey="tableTitleExpenses"
-                  />
-                }
+                element={<OperationsExpensePage authToken={authToken} />}
               />
               <Route path="*" element={<Navigate to="/operations/income" replace />} />
             </Routes>
