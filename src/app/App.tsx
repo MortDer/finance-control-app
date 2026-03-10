@@ -79,32 +79,42 @@ export default function App() {
           onThemeChange={setIsDarkTheme}
           onAuthClick={handleHeaderAuthClick}
         />
-        <Content style={{ padding: 24 }}>
+        <Content
+          style={{
+            padding: 24,
+            height: 'calc(100vh - 64px)',
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+          }}
+        >
           <OperationsTabs />
-          <Routes>
-            <Route path="/" element={<Navigate to="/operations/income" replace />} />
-            <Route
-              path="/operations/income"
-              element={
-                <OperationsTable
-                  authToken={authToken}
-                  operationType="Profit"
-                  titleKey="tableTitleIncomes"
-                />
-              }
-            />
-            <Route
-              path="/operations/expense"
-              element={
-                <OperationsTable
-                  authToken={authToken}
-                  operationType="Cost"
-                  titleKey="tableTitleExpenses"
-                />
-              }
-            />
-            <Route path="*" element={<Navigate to="/operations/income" replace />} />
-          </Routes>
+          <div style={{ flex: 1, minHeight: 0 }}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/operations/income" replace />} />
+              <Route
+                path="/operations/income"
+                element={
+                  <OperationsTable
+                    authToken={authToken}
+                    operationType="Profit"
+                    titleKey="tableTitleIncomes"
+                  />
+                }
+              />
+              <Route
+                path="/operations/expense"
+                element={
+                  <OperationsTable
+                    authToken={authToken}
+                    operationType="Cost"
+                    titleKey="tableTitleExpenses"
+                  />
+                }
+              />
+              <Route path="*" element={<Navigate to="/operations/income" replace />} />
+            </Routes>
+          </div>
         </Content>
         <AuthModal
           open={isAuthModalOpen}

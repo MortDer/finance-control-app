@@ -1,7 +1,7 @@
-import { Alert, Button, Space, Table } from 'antd'
+import { Alert, Button, Table } from 'antd'
 import axios from 'axios'
 import type { TableProps } from 'antd'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getOperations } from '../../../entities/operation/api/operationsApi'
 import type {
@@ -29,10 +29,12 @@ const mapOperationToRow = (operation: OperationDto): OperationRow => ({
 
 export function OperationsTable({ authToken, operationType, titleKey }: OperationsTableProps) {
   const { t } = useTranslation()
+  const containerRef = useRef<HTMLDivElement | null>(null)
   const [rows, setRows] = useState<OperationRow[]>([])
   const [isLoading, setIsLoading] = useState(false)
   const [errorText, setErrorText] = useState('')
   const [reloadTick, setReloadTick] = useState(0)
+  const [scrollY, setScrollY] = useState(260)
   const [pagination, setPagination] = useState<OperationsPagination>({
     pageNumber: 1,
     pageSize: 10,
@@ -76,6 +78,26 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
     }
   }, [authToken, operationType, pagination.pageNumber, pagination.pageSize, reloadTick, t])
 
+  useEffect(() => {
+    const updateScrollY = () => {
+      const containerHeight = containerRef.current?.clientHeight ?? 0
+      const errorReserved = errorText ? 72 : 0
+      const reservedHeight = 150 + errorReserved
+      setScrollY(Math.max(180, containerHeight - reservedHeight))
+    }
+
+    updateScrollY()
+    const resizeObserver = new ResizeObserver(updateScrollY)
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current)
+    }
+
+    return () => {
+      resizeObserver.disconnect()
+    }
+  }, [errorText, pagination.pageSize])
+
   const columns: TableProps<OperationRow>['columns'] = [
     { title: t('name'), dataIndex: 'name', key: 'name' },
     { title: t('category'), dataIndex: 'category', key: 'category' },
@@ -85,7 +107,10 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
   ]
 
   return (
-    <Space orientation="vertical" size="middle" style={{ width: '100%' }}>
+    <div
+      ref={containerRef}
+      style={{ height: '100%', minHeight: 0, display: 'flex', flexDirection: 'column', gap: 16 }}
+    >
       {errorText ? (
         <Alert
           type="error"
@@ -94,19 +119,23 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
           action={<Button onClick={() => setReloadTick((prev) => prev + 1)}>{t('retry')}</Button>}
         />
       ) : null}
-      <Table
-        columns={columns}
-        dataSource={rows}
-        loading={isLoading}
-        title={() => t(titleKey)}
-        pagination={{
-          current: pagination.pageNumber,
-          pageSize: pagination.pageSize,
-          total: pagination.total,
-          showSizeChanger: true,
-          onChange: (pageNumber, pageSize) => setPagination((prev) => ({ ...prev, pageNumber, pageSize })),
-        }}
-      />
-    </Space>
+      <div style={{ flex: 1, minHeight: 0 }}>
+        <Table
+          columns={columns}
+          dataSource={rows}
+          loading={isLoading}
+          scroll={{ y: scrollY }}
+          sticky
+          title={() => t(titleKey)}
+          pagination={{
+            current: pagination.pageNumber,
+            pageSize: pagination.pageSize,
+            total: pagination.total,
+            showSizeChanger: true,
+            onChange: (pageNumber, pageSize) => setPagination((prev) => ({ ...prev, pageNumber, pageSize })),
+          }}
+        />
+      </div>
+    </div>
   )
 }
