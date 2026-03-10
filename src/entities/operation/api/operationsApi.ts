@@ -27,6 +27,16 @@ type CreateOperationParams = {
   categoryId: string
 }
 
+type UpdateOperationParams = {
+  id: string
+  name?: string
+  desc?: string
+  amount?: number
+  date?: string
+  type?: OperationType
+  categoryId?: string
+}
+
 export async function getOperations(params: GetOperationsParams): Promise<GetOperationsResult> {
   const query = new URLSearchParams({
     type: JSON.stringify(params.type),
@@ -52,4 +62,14 @@ export async function getOperations(params: GetOperationsParams): Promise<GetOpe
 export async function createOperation(params: CreateOperationParams): Promise<OperationDto> {
   const response = await http.post<OperationDto>('/operations', params)
   return response.data
+}
+
+export async function updateOperation(params: UpdateOperationParams): Promise<OperationDto> {
+  const { id, ...body } = params
+  const response = await http.patch<OperationDto>(`/operations/${id}`, body)
+  return response.data
+}
+
+export async function deleteOperation(id: string): Promise<void> {
+  await http.delete(`/operations/${id}`)
 }

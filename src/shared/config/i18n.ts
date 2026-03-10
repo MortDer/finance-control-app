@@ -45,6 +45,11 @@ const resources = {
       categoriesLoadError: 'Не удалось загрузить категории',
       categoryCreateError: 'Не удалось создать категорию',
       operationCreateError: 'Не удалось создать операцию',
+      operationUpdateError: 'Не удалось обновить операцию',
+      operationDeleteError: 'Не удалось удалить операцию',
+      actions: 'Действия',
+      deleteOperationConfirm: 'Удалить операцию?',
+      delete: 'Удалить',
     },
   },
   en: {
@@ -90,6 +95,11 @@ const resources = {
       categoriesLoadError: 'Failed to load categories',
       categoryCreateError: 'Failed to create category',
       operationCreateError: 'Failed to create operation',
+      operationUpdateError: 'Failed to update operation',
+      operationDeleteError: 'Failed to delete operation',
+      actions: 'Actions',
+      deleteOperationConfirm: 'Delete operation?',
+      delete: 'Delete',
     },
   },
 }

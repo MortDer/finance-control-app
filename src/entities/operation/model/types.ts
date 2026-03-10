@@ -1,10 +1,14 @@
 export type OperationRow = {
   key: string
+  id: string
   name: string
+  categoryId?: string
   categoryPhoto?: string
   category: string
   amount: number
   date: string
+  dateIso: string
+  dateSortValue: number
   description: string
 }
 

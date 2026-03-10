@@ -1,17 +1,11 @@
-import { Alert, Button, Image, Table } from 'antd'
-import axios from 'axios'
-import type { TableProps } from 'antd'
+import { Alert, Button, Table } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
-import { getOperations } from '../../../entities/operation/api/operationsApi'
 import { CreateOperationModal } from '../../../features/operation-create/ui/CreateOperationModal'
-import type {
-  OperationDto,
-  OperationRow,
-  OperationsPagination,
-  OperationType,
-} from '../../../entities/operation/model/types'
-import { getApiErrorMessage } from '../../../shared/lib/getApiErrorMessage'
+import type { OperationType } from '../../../entities/operation/model/types'
+import { getOperationsColumns } from '../lib/getOperationsColumns'
+import { useOperationRowEdit } from '../model/useOperationRowEdit'
+import { useOperationsTableData } from '../model/useOperationsTableData'
 
 type OperationsTableProps = {
   authToken: string
@@ -19,67 +13,26 @@ type OperationsTableProps = {
   titleKey: 'tableTitleIncomes' | 'tableTitleExpenses'
 }
 
-const mapOperationToRow = (operation: OperationDto): OperationRow => ({
-  key: operation.id,
-  name: operation.name,
-  categoryPhoto: operation.category?.photo,
-  category: operation.category?.name || '-',
-  amount: operation.amount,
-  date: new Date(operation.date).toLocaleDateString(),
-  description: operation.desc || '-',
-})
-
 export function OperationsTable({ authToken, operationType, titleKey }: OperationsTableProps) {
   const { t } = useTranslation()
   const containerRef = useRef<HTMLDivElement | null>(null)
-  const [rows, setRows] = useState<OperationRow[]>([])
-  const [isLoading, setIsLoading] = useState(false)
-  const [errorText, setErrorText] = useState('')
-  const [reloadTick, setReloadTick] = useState(0)
-  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [scrollY, setScrollY] = useState(260)
-  const [pagination, setPagination] = useState<OperationsPagination>({
-    pageNumber: 1,
-    pageSize: 10,
-    total: 0,
-  })
-
-  useEffect(() => {
-    const controller = new AbortController()
-
-    const loadOperations = async () => {
-      try {
-        setIsLoading(true)
-        setErrorText('')
-        const response = await getOperations({
-          type: operationType,
-          pageNumber: pagination.pageNumber,
-          pageSize: pagination.pageSize,
-          signal: controller.signal,
-        })
-
-        setRows(response.data.map(mapOperationToRow))
-        setPagination((prev) => ({ ...prev, total: response.pagination.total }))
-      } catch (error) {
-        if (axios.isAxiosError(error) && error.code === 'ERR_CANCELED') {
-          return
-        }
-
-        setErrorText(getApiErrorMessage(error, t('operationsLoadError')))
-        setRows([])
-      } finally {
-        if (!controller.signal.aborted) {
-          setIsLoading(false)
-        }
-      }
-    }
-
-    void loadOperations()
-
-    return () => {
-      controller.abort()
-    }
-  }, [authToken, operationType, pagination.pageNumber, pagination.pageSize, reloadTick, t])
+  const {
+    rows,
+    isLoading,
+    errorText,
+    setErrorText,
+    pagination,
+    setPagination,
+    isCreateModalOpen,
+    setIsCreateModalOpen,
+    actionLoading,
+    categories,
+    refetchOperations,
+    saveOperation,
+    removeOperationById,
+  } = useOperationsTableData({ authToken, operationType, t })
+  const { editingRowId, editDraft, isEditing, beginEdit, setDraftField, resetEdit } = useOperationRowEdit()
 
   useEffect(() => {
     const updateScrollY = () => {
@@ -101,31 +54,40 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
     }
   }, [errorText, pagination.pageSize])
 
-  const columns: TableProps<OperationRow>['columns'] = [
-    {
-      title: t('photo'),
-      dataIndex: 'categoryPhoto',
-      key: 'categoryPhoto',
-      width: 72,
-      render: (value: string | undefined) =>
-        value ? (
-          <Image
-            src={value}
-            alt={t('category')}
-            width={36}
-            height={36}
-            style={{ borderRadius: 6, objectFit: 'cover' }}
-          />
-        ) : (
-          '-'
-        ),
-    },
-    { title: t('name'), dataIndex: 'name', key: 'name' },
-    { title: t('category'), dataIndex: 'category', key: 'category' },
-    { title: t('amount'), dataIndex: 'amount', key: 'amount' },
-    { title: t('date'), dataIndex: 'date', key: 'date' },
-    { title: t('description'), dataIndex: 'description', key: 'description' },
-  ]
+  const saveEdit = async () => {
+    if (!editDraft) {
+      return
+    }
+    if (!editDraft.name.trim() || !editDraft.categoryId || !editDraft.dateIso || !editDraft.amount) {
+      setErrorText(t('requiredField'))
+      return
+    }
+
+    const isSaved = await saveOperation(editDraft)
+    if (isSaved) {
+      resetEdit()
+    }
+  }
+
+  const removeOperation = async (id: string) => {
+    const isDeleted = await removeOperationById(id)
+    if (isDeleted && editingRowId === id) {
+      resetEdit()
+    }
+  }
+
+  const columns = getOperationsColumns({
+    t,
+    authToken,
+    categories,
+    editDraft,
+    actionLoading,
+    isEditing,
+    beginEdit,
+    setDraftField,
+    saveEdit: () => void saveEdit(),
+    removeOperation: (id) => void removeOperation(id),
+  })
 
   return (
     <div
@@ -137,7 +99,7 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
           type="error"
           showIcon
           title={errorText}
-          action={<Button onClick={() => setReloadTick((prev) => prev + 1)}>{t('retry')}</Button>}
+          action={<Button onClick={refetchOperations}>{t('retry')}</Button>}
         />
       ) : null}
       <div style={{ flex: 1, minHeight: 0 }}>
@@ -170,7 +132,7 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
         open={isCreateModalOpen}
         operationType={operationType}
         onClose={() => setIsCreateModalOpen(false)}
-        onSuccess={() => setReloadTick((prev) => prev + 1)}
+        onSuccess={refetchOperations}
       />
     </div>
   )
