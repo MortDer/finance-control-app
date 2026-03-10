@@ -84,7 +84,7 @@ export function useOperationsTableData({ authToken, operationType, t }: Params) 
     void loadOperations()
 
     return () => controller.abort()
-  }, [operationType, pagination.pageNumber, pagination.pageSize, refetchVersion, t])
+  }, [authToken, operationType, pagination.pageNumber, pagination.pageSize, refetchVersion, t])
 
   useEffect(() => {
     if (!authToken) {
