@@ -1,9 +1,11 @@
 import { ConfigProvider, Layout, theme } from 'antd'
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import { AuthModal } from '../features/auth/ui/AuthModal'
 import { ProfileModal } from '../features/profile/ui/ProfileModal'
 import { AppHeader } from '../widgets/app-header/ui/AppHeader'
+import { OperationsTable } from '../widgets/operations-table/ui/OperationsTable'
 import { OperationsTabs } from '../widgets/operations-tabs/ui/OperationsTabs'
 import {
   AUTH_TOKEN_STORAGE_KEY,
@@ -78,7 +80,31 @@ export default function App() {
           onAuthClick={handleHeaderAuthClick}
         />
         <Content style={{ padding: 24 }}>
-          <OperationsTabs authToken={authToken} />
+          <OperationsTabs />
+          <Routes>
+            <Route path="/" element={<Navigate to="/operations/income" replace />} />
+            <Route
+              path="/operations/income"
+              element={
+                <OperationsTable
+                  authToken={authToken}
+                  operationType="Profit"
+                  titleKey="tableTitleIncomes"
+                />
+              }
+            />
+            <Route
+              path="/operations/expense"
+              element={
+                <OperationsTable
+                  authToken={authToken}
+                  operationType="Cost"
+                  titleKey="tableTitleExpenses"
+                />
+              }
+            />
+            <Route path="*" element={<Navigate to="/operations/income" replace />} />
+          </Routes>
         </Content>
         <AuthModal
           open={isAuthModalOpen}

@@ -10,6 +10,7 @@ type GetOperationsParams = {
   type: OperationType
   pageNumber: number
   pageSize: number
+  signal?: AbortSignal
 }
 
 type GetOperationsResult = {
@@ -25,7 +26,9 @@ export async function getOperations(params: GetOperationsParams): Promise<GetOpe
       pageSize: params.pageSize,
     }),
   })
-  const response = await http.get<OperationsResponse>(`/operations?${query.toString()}`)
+  const response = await http.get<OperationsResponse>(`/operations?${query.toString()}`, {
+    signal: params.signal,
+  })
 
   return {
     data: response.data.data || [],
