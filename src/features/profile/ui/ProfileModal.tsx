@@ -2,7 +2,7 @@ import { Alert, Button, Descriptions, Modal, Space, Spin, Typography } from 'ant
 import { useEffect, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { getProfile, type Profile } from '../api/profileApi'
-import { getApiErrorMessage } from '../../../shared/lib/getApiErrorMessage'
+import { getApiErrorMessage } from '../../../shared/api/getApiErrorMessage'
 
 type ProfileModalProps = {
   open: boolean

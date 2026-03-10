@@ -12,7 +12,7 @@ import type {
   OperationsPagination,
   OperationType,
 } from '../../../entities/operation/model/types'
-import { getApiErrorMessage } from '../../../shared/lib/getApiErrorMessage'
+import { getApiErrorMessage } from '../../../shared/api/getApiErrorMessage'
 import type { EditDraft } from './useOperationRowEdit'
 
 const mapOperationToRow = (operation: OperationDto): OperationRow => ({

@@ -6,7 +6,7 @@ import type { Category } from '../../../entities/category/model/types'
 import { createOperation } from '../../../entities/operation/api/operationsApi'
 import type { OperationType } from '../../../entities/operation/model/types'
 import { ManageCategoriesModal } from '../../category-manage/ui/ManageCategoriesModal'
-import { getApiErrorMessage } from '../../../shared/lib/getApiErrorMessage'
+import { getApiErrorMessage } from '../../../shared/api/getApiErrorMessage'
 
 type CreateOperationModalProps = {
   open: boolean

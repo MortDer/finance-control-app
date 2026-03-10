@@ -2,7 +2,7 @@ import { Alert, Button, Form, Input, Modal, Tabs } from 'antd'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { signIn, signUp } from '../api/authApi'
-import { getApiErrorMessage } from '../../../shared/lib/getApiErrorMessage'
+import { getApiErrorMessage } from '../../../shared/api/getApiErrorMessage'
 
 type AuthModalProps = {
   open: boolean
