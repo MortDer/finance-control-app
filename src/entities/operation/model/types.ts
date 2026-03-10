@@ -1,6 +1,7 @@
 export type OperationRow = {
   key: string
   name: string
+  categoryPhoto?: string
   category: string
   amount: number
   date: string
@@ -17,7 +18,9 @@ export type OperationDto = {
   date: string
   type: OperationType
   category?: {
+    id?: string
     name?: string
+    photo?: string
   }
 }
 

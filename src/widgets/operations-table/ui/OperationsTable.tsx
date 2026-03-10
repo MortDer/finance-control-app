@@ -1,4 +1,4 @@
-import { Alert, Button, Table } from 'antd'
+import { Alert, Button, Image, Table } from 'antd'
 import axios from 'axios'
 import type { TableProps } from 'antd'
 import { useEffect, useRef, useState } from 'react'
@@ -22,6 +22,7 @@ type OperationsTableProps = {
 const mapOperationToRow = (operation: OperationDto): OperationRow => ({
   key: operation.id,
   name: operation.name,
+  categoryPhoto: operation.category?.photo,
   category: operation.category?.name || '-',
   amount: operation.amount,
   date: new Date(operation.date).toLocaleDateString(),
@@ -101,6 +102,24 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
   }, [errorText, pagination.pageSize])
 
   const columns: TableProps<OperationRow>['columns'] = [
+    {
+      title: t('photo'),
+      dataIndex: 'categoryPhoto',
+      key: 'categoryPhoto',
+      width: 72,
+      render: (value: string | undefined) =>
+        value ? (
+          <Image
+            src={value}
+            alt={t('category')}
+            width={36}
+            height={36}
+            style={{ borderRadius: 6, objectFit: 'cover' }}
+          />
+        ) : (
+          '-'
+        ),
+    },
     { title: t('name'), dataIndex: 'name', key: 'name' },
     { title: t('category'), dataIndex: 'category', key: 'category' },
     { title: t('amount'), dataIndex: 'amount', key: 'amount' },
