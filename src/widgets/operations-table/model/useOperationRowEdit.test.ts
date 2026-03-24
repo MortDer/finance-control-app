@@ -12,7 +12,6 @@ const baseRow: OperationRow = {
   amount: 1000,
   date: '01.01.2026',
   dateIso: '2026-01-01T00:00:00.000Z',
-  dateSortValue: 1735689600000,
   description: '-',
 }
 

@@ -10,6 +10,7 @@ import type {
   OperationDto,
   OperationRow,
   OperationsPagination,
+  OperationsSorting,
   OperationType,
 } from '../../../entities/operation/model/types'
 import { getApiErrorMessage } from '../../../shared/api/getApiErrorMessage'
@@ -25,7 +26,6 @@ const mapOperationToRow = (operation: OperationDto): OperationRow => ({
   amount: operation.amount,
   date: new Date(operation.date).toLocaleDateString(),
   dateIso: operation.date,
-  dateSortValue: new Date(operation.date).getTime(),
   description: operation.desc || '-',
 })
 
@@ -48,6 +48,7 @@ export function useOperationsTableData({ authToken, operationType, t }: Params) 
     pageSize: 10,
     total: 0,
   })
+  const [sorting, setSorting] = useState<OperationsSorting | undefined>(undefined)
 
   useEffect(() => {
     tRef.current = t
@@ -64,6 +65,7 @@ export function useOperationsTableData({ authToken, operationType, t }: Params) 
           type: operationType,
           pageNumber: pagination.pageNumber,
           pageSize: pagination.pageSize,
+          sorting,
           signal: controller.signal,
         })
 
@@ -86,7 +88,7 @@ export function useOperationsTableData({ authToken, operationType, t }: Params) 
     void loadOperations()
 
     return () => controller.abort()
-  }, [authToken, operationType, pagination.pageNumber, pagination.pageSize, refetchVersion])
+  }, [authToken, operationType, pagination.pageNumber, pagination.pageSize, refetchVersion, sorting])
 
   const refetchOperations = () => setRefetchVersion((prev) => prev + 1)
 
@@ -134,6 +136,8 @@ export function useOperationsTableData({ authToken, operationType, t }: Params) 
     setErrorText,
     pagination,
     setPagination,
+    sorting,
+    setSorting,
     isCreateModalOpen,
     setIsCreateModalOpen,
     actionLoading,

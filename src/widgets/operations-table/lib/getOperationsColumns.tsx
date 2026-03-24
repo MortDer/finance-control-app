@@ -1,10 +1,11 @@
 import { DeleteOutlined, EditOutlined, SaveOutlined } from '@ant-design/icons'
 import { Button, DatePicker, Image, Input, InputNumber, Popconfirm, Select, Space } from 'antd'
 import type { TableProps } from 'antd'
+import type { SortOrder } from 'antd/es/table/interface'
 import dayjs from 'dayjs'
 import type { TFunction } from 'i18next'
 import type { Category } from '../../../entities/category/model/types'
-import type { OperationRow } from '../../../entities/operation/model/types'
+import type { OperationRow, OperationsSorting } from '../../../entities/operation/model/types'
 import type { EditDraft } from '../model/useOperationRowEdit'
 
 type Params = {
@@ -13,6 +14,7 @@ type Params = {
   categories: Category[]
   editDraft: EditDraft | null
   actionLoading: boolean
+  sorting?: OperationsSorting
   isEditing: (row: OperationRow) => boolean
   beginEdit: (row: OperationRow) => void
   setDraftField: <K extends keyof EditDraft>(field: K, value: EditDraft[K]) => void
@@ -26,12 +28,21 @@ export function getOperationsColumns({
   categories,
   editDraft,
   actionLoading,
+  sorting,
   isEditing,
   beginEdit,
   setDraftField,
   saveEdit,
   removeOperation,
 }: Params): TableProps<OperationRow>['columns'] {
+  const getSortOrder = (field: OperationsSorting['field']): SortOrder => {
+    if (!sorting || sorting.field !== field) {
+      return null
+    }
+
+    return sorting.type === 'ASC' ? 'ascend' : 'descend'
+  }
+
   const columns: TableProps<OperationRow>['columns'] = [
     {
       title: t('photo'),
@@ -55,7 +66,8 @@ export function getOperationsColumns({
       title: t('name'),
       dataIndex: 'name',
       key: 'name',
-      sorter: (a, b) => a.name.localeCompare(b.name),
+      sorter: true,
+      sortOrder: getSortOrder('name'),
       render: (_value, row) =>
         isEditing(row) ? (
           <Input value={editDraft?.name} onChange={(event) => setDraftField('name', event.target.value)} />
@@ -67,7 +79,6 @@ export function getOperationsColumns({
       title: t('category'),
       dataIndex: 'category',
       key: 'category',
-      sorter: (a, b) => a.category.localeCompare(b.category),
       render: (_value, row) =>
         isEditing(row) ? (
           <Select
@@ -85,7 +96,6 @@ export function getOperationsColumns({
       title: t('amount'),
       dataIndex: 'amount',
       key: 'amount',
-      sorter: (a, b) => a.amount - b.amount,
       render: (_value, row) =>
         isEditing(row) ? (
           <InputNumber
@@ -105,7 +115,8 @@ export function getOperationsColumns({
       title: t('date'),
       dataIndex: 'date',
       key: 'date',
-      sorter: (a, b) => a.dateSortValue - b.dateSortValue,
+      sorter: true,
+      sortOrder: getSortOrder('date'),
       render: (_value, row) =>
         isEditing(row) ? (
           <DatePicker

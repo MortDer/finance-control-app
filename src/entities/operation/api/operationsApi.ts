@@ -1,5 +1,10 @@
 import { http } from '../../../shared/api/http'
-import type { OperationDto, OperationsPagination, OperationType } from '../model/types'
+import type {
+  OperationDto,
+  OperationsPagination,
+  OperationsSorting,
+  OperationType,
+} from '../model/types'
 
 type OperationsResponse = {
   data: OperationDto[]
@@ -10,6 +15,7 @@ type GetOperationsParams = {
   type: OperationType
   pageNumber: number
   pageSize: number
+  sorting?: OperationsSorting
   signal?: AbortSignal
 }
 
@@ -38,13 +44,19 @@ type UpdateOperationParams = {
 }
 
 export async function getOperations(params: GetOperationsParams): Promise<GetOperationsResult> {
-  const query = new URLSearchParams({
+  const queryParams: Record<string, string> = {
     type: JSON.stringify(params.type),
     pagination: JSON.stringify({
       pageNumber: params.pageNumber,
       pageSize: params.pageSize,
     }),
-  })
+  }
+
+  if (params.sorting) {
+    queryParams.sorting = JSON.stringify(params.sorting)
+  }
+
+  const query = new URLSearchParams(queryParams)
   const response = await http.get<OperationsResponse>(`/operations?${query.toString()}`, {
     signal: params.signal,
   })

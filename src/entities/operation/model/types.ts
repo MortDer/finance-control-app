@@ -8,11 +8,17 @@ export type OperationRow = {
   amount: number
   date: string
   dateIso: string
-  dateSortValue: number
   description: string
 }
 
 export type OperationType = 'Cost' | 'Profit'
+export type OperationSortType = 'ASC' | 'DESC'
+export type OperationSortField = 'id' | 'createdAt' | 'updatedAt' | 'name' | 'date'
+
+export type OperationsSorting = {
+  type: OperationSortType
+  field: OperationSortField
+}
 
 export type OperationDto = {
   id: string

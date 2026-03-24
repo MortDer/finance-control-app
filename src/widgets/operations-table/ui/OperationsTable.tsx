@@ -1,7 +1,9 @@
 import { Alert, Button, Table } from 'antd'
+import type { TableProps } from 'antd'
 import { useEffect, useRef, useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { useCategories } from '../../../entities/category/model/useCategories'
+import type { OperationRow } from '../../../entities/operation/model/types'
 import { getApiErrorMessage } from '../../../shared/api/getApiErrorMessage'
 import { CreateOperationModal } from '../../../features/operation-create/ui/CreateOperationModal'
 import type { OperationType } from '../../../entities/operation/model/types'
@@ -26,6 +28,8 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
     setErrorText,
     pagination,
     setPagination,
+    sorting,
+    setSorting,
     isCreateModalOpen,
     setIsCreateModalOpen,
     actionLoading,
@@ -101,12 +105,43 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
     categories,
     editDraft,
     actionLoading,
+    sorting,
     isEditing,
     beginEdit,
     setDraftField,
     saveEdit: () => void saveEdit(),
     removeOperation: (id) => void removeOperation(id),
   })
+
+  const handleTableChange: TableProps<OperationRow>['onChange'] = (
+    _nextPagination,
+    _filters,
+    sorter,
+    extra,
+  ) => {
+    if (extra.action !== 'sort') {
+      return
+    }
+
+    if (Array.isArray(sorter)) {
+      return
+    }
+
+    const field = sorter.field
+    const order = sorter.order
+
+    if ((field !== 'name' && field !== 'date') || !order) {
+      setSorting(undefined)
+      setPagination((prev) => ({ ...prev, pageNumber: 1 }))
+      return
+    }
+
+    setSorting({
+      field,
+      type: order === 'ascend' ? 'ASC' : 'DESC',
+    })
+    setPagination((prev) => ({ ...prev, pageNumber: 1 }))
+  }
 
   return (
     <div
@@ -145,6 +180,7 @@ export function OperationsTable({ authToken, operationType, titleKey }: Operatio
             showSizeChanger: true,
             onChange: (pageNumber, pageSize) => setPagination((prev) => ({ ...prev, pageNumber, pageSize })),
           }}
+          onChange={handleTableChange}
         />
       </div>
       <CreateOperationModal
